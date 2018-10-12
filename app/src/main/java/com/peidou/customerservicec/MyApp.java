@@ -49,9 +49,9 @@ public class MyApp extends Application {
         // 设置自动登录
         options.setAutoLogin(true);
         // 设置是否需要发送已读回执
-        options.setRequireAck(true);
+        options.setRequireAck(false);
         // 设置是否需要发送回执，
-        options.setRequireDeliveryAck(true);
+        options.setRequireDeliveryAck(false);
         // 设置是否根据服务器时间排序，默认是true
         options.setSortMessageByServerTime(false);
         // 收到好友申请是否自动同意，如果是自动同意就不会收到好友请求的回调，因为sdk会自动处理，默认为true

@@ -29,6 +29,7 @@ public class FindAContactActivity extends AppCompatActivity implements View.OnCl
     private Button mStartChatBtn;
     private Button mSignOutBtn;
     private TextView mContactEt;
+    private String mCurrentUserName;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -43,8 +44,13 @@ public class FindAContactActivity extends AppCompatActivity implements View.OnCl
         mStartChatBtn = findViewById(R.id.start_chat_btn);
         mSignOutBtn = findViewById(R.id.sign_out_btn);
 
-        String currentUserName = MyApp.getSp().getString(USERNAME, "");
-        mContactEt.setText("当前用户是" + currentUserName);
+        mCurrentUserName = MyApp.getSp().getString(USERNAME, "");
+        if (mCurrentUserName.equals("xc")) {
+            mStartChatBtn.setText("对xk发起聊天");
+        } else if (mCurrentUserName.equals("xk")) {
+            mStartChatBtn.setText("对xc发起聊天");
+        }
+        mContactEt.setText("当前用户是" + mCurrentUserName);
         initListener(mSignOutBtn, mStartChatBtn);
     }
 
@@ -70,7 +76,11 @@ public class FindAContactActivity extends AppCompatActivity implements View.OnCl
 
     private void startChatActivity() {
         Intent intent = new Intent(this, ChatActivity.class);
-        intent.putExtra("userId", "xk");
+        if (mCurrentUserName.equals("xc")) {
+            intent.putExtra("userId", "xk");
+        } else if (mCurrentUserName.equals("xk")) {
+            intent.putExtra("userId", "xc");
+        }
         startActivity(intent);
     }
 
