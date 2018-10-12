@@ -61,6 +61,7 @@
         </activity>
         <activity android:name=".FindAContactActivity" />
         <activity android:name=".ChatActivity" />
+        <activity android:name=".WebActivity" />
         <!-- 设置环信应用的 appkey 换成自己的-->
         <meta-data
             android:name="EASEMOB_APPKEY"

@@ -1,5 +1,6 @@
 package com.peidou.customerservicec;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
@@ -53,7 +54,7 @@ public class ChatActivity extends AppCompatActivity {
             @Override
             public boolean onMessageBubbleClick(EMMessage message) {
                 if (message.getBooleanAttribute(EaseConstant.MESSAGE_ATTR_IS_COMMODITY, false)) {
-
+                    startActivity(new Intent(ChatActivity.this, WebActivity.class));
                 }
                 return false;
             }

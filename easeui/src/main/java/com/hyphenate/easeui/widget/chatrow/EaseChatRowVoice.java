@@ -51,9 +51,9 @@ public class EaseChatRowVoice extends EaseChatRowFile {
             voiceLengthView.setVisibility(View.INVISIBLE);
         }
         if (message.direct() == EMMessage.Direct.RECEIVE) {
-            voiceImageView.setImageResource(R.drawable.ease_chatfrom_voice_playing);
+            voiceImageView.setImageResource(R.mipmap.gray_play3);
         } else {
-            voiceImageView.setImageResource(R.drawable.ease_chatto_voice_playing);
+            voiceImageView.setImageResource(R.mipmap.red_play3);
         }
 
         if (message.direct() == EMMessage.Direct.RECEIVE) {
@@ -104,9 +104,9 @@ public class EaseChatRowVoice extends EaseChatRowFile {
 
     public void startVoicePlayAnimation() {
         if (message.direct() == EMMessage.Direct.RECEIVE) {
-            voiceImageView.setImageResource(R.anim.voice_from_icon);
+            voiceImageView.setImageResource(R.drawable.voice_from_icon);
         } else {
-            voiceImageView.setImageResource(R.anim.voice_to_icon);
+            voiceImageView.setImageResource(R.drawable.voice_to_icon);
         }
         voiceAnimation = (AnimationDrawable) voiceImageView.getDrawable();
         voiceAnimation.start();
@@ -123,9 +123,9 @@ public class EaseChatRowVoice extends EaseChatRowFile {
         }
 
         if (message.direct() == EMMessage.Direct.RECEIVE) {
-            voiceImageView.setImageResource(R.drawable.ease_chatfrom_voice_playing);
+            voiceImageView.setImageResource(R.mipmap.gray_play3);
         } else {
-            voiceImageView.setImageResource(R.drawable.ease_chatto_voice_playing);
+            voiceImageView.setImageResource(R.mipmap.red_play3);
         }
     }
 }

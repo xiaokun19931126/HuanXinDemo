@@ -33,9 +33,9 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_below="@+id/tv_userid"
-            android:layout_marginLeft="@dimen/margin_chat_activity"
+            android:layout_marginRight="@dimen/dimen_12dp"
             android:layout_toLeftOf="@id/iv_userhead"
-            android:background="@drawable/ease_chatto_bg">
+            android:background="@drawable/ease_chat_send_commodity_bg">
 
             <ImageView
                 android:id="@+id/img_iv"
@@ -61,8 +61,8 @@
                 android:maxLines="2"
                 android:minHeight="38dp"
                 android:text="美容美容美容美容美容美容美容美容美容美容美容美容美容美容美容美容"
-                android:textColor="#ff000000"
-                android:textSize="15sp"
+                android:textColor="@color/color_0F1826"
+                android:textSize="14sp"
                 app:layout_constraintLeft_toRightOf="@+id/img_iv"
                 app:layout_constraintTop_toTopOf="parent" />
 
@@ -71,8 +71,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="10dp"
-                android:text="1999"
-                android:textColor="#ff0000"
+                android:text="￥1999"
+                android:textColor="@color/color_FF4691"
                 app:layout_constraintBottom_toBottomOf="@+id/img_iv"
                 app:layout_constraintLeft_toRightOf="@+id/img_iv"
                 app:layout_constraintTop_toBottomOf="@+id/title_tv" />
