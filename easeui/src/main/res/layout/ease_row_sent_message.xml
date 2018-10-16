@@ -19,22 +19,22 @@
 
         <com.hyphenate.easeui.widget.EaseImageView
             android:id="@+id/iv_userhead"
-            android:layout_width="@dimen/size_avatar"
-            android:layout_height="@dimen/size_avatar"
+            android:layout_width="@dimen/dimen_40dp"
+            android:layout_height="@dimen/dimen_40dp"
             android:layout_alignParentTop="true"
             android:layout_alignParentRight="true"
-            android:layout_marginRight="@dimen/margin_chat_activity"
+            android:layout_marginRight="@dimen/dimen_16dp"
             android:scaleType="fitXY"
             android:src="@drawable/ease_default_avatar" />
 
         <RelativeLayout
             android:id="@+id/bubble"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_height="40dp"
             android:layout_marginRight="@dimen/dimen_12dp"
             android:layout_toLeftOf="@id/iv_userhead"
             android:background="@drawable/ease_chat_send_bg"
-            android:minHeight="48dp">
+            android:minHeight="40dp">
 
             <TextView
                 android:id="@+id/tv_chatcontent"

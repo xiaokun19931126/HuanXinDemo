@@ -11,6 +11,7 @@ import android.widget.TextView;
 
 import com.hyphenate.EMCallBack;
 import com.hyphenate.chat.EMClient;
+import com.hyphenate.easeui.ui.ChatActivity;
 
 import static com.peidou.customerservicec.Constants.ISLOGIN;
 import static com.peidou.customerservicec.Constants.USERNAME;

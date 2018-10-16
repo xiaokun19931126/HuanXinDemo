@@ -77,8 +77,7 @@ public abstract class EaseChatPrimaryMenuBase extends RelativeLayout{
                 inputManager.hideSoftInputFromWindow(activity.getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
         }
     }
-    
-    
+
     public interface EaseChatPrimaryMenuListener{
         /**
          * when send button clicked

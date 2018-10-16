@@ -60,8 +60,14 @@
             </intent-filter>
         </activity>
         <activity android:name=".FindAContactActivity" />
-        <activity android:name=".ChatActivity" />
-        <activity android:name=".WebActivity" />
+        <activity android:name="com.hyphenate.easeui.ui.ChatActivity" />
+        <activity android:name="com.hyphenate.easeui.ui.WebActivity" />
+        <!-- 显示下载大图页面 -->
+        <activity
+            android:name="com.hyphenate.easeui.ui.EaseShowBigImageActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/horizontal_slide" />
+
         <!-- 设置环信应用的 appkey 换成自己的-->
         <meta-data
             android:name="EASEMOB_APPKEY"

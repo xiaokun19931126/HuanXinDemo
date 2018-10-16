@@ -5,6 +5,7 @@ import android.content.res.TypedArray;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
+import android.view.View;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 
@@ -143,7 +144,7 @@ public class EaseChatMessageList extends RelativeLayout{
 	     */
 	    boolean onBubbleClick(EMMessage message);
 	    boolean onResendClick(EMMessage message);
-	    void onBubbleLongClick(EMMessage message);
+	    void onBubbleLongClick(View v, EMMessage message);
 	    void onUserAvatarClick(String username);
 	    void onUserAvatarLongClick(String username);
 	    void onMessageInProgress(EMMessage message);

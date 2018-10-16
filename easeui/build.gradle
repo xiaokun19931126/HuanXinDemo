@@ -24,6 +24,13 @@ android {
         abortOnError false
     }
 
+    //这个是找so库的路径的，如果在main目录下自建了jniLibs文件夹，就不需要下面这个.
+    sourceSets {
+        main {
+            jniLibs.srcDirs = ['libs']
+        }
+    }
+
 }
 
 dependencies {
@@ -38,6 +45,7 @@ dependencies {
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
-    compile 'com.android.support:appcompat-v7:27.1.1'
+    implementation 'com.android.support:appcompat-v7:27.1.1'
+    implementation "com.android.support:design:27.1.1"
     testCompile 'junit:junit:4.12'
 }

@@ -6,14 +6,19 @@ import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
+import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.provider.MediaStore;
+import android.support.design.widget.BottomSheetDialog;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v4.widget.SwipeRefreshLayout.OnRefreshListener;
+import android.support.v7.widget.DividerItemDecoration;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -25,6 +30,8 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.ListView;
+import android.widget.PopupWindow;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.hyphenate.EMCallBack;
@@ -42,7 +49,9 @@ import com.hyphenate.chat.EMTextMessageBody;
 import com.hyphenate.chat.adapter.EMAChatRoomManagerListener;
 import com.hyphenate.easeui.EaseConstant;
 import com.hyphenate.easeui.EaseUI;
+import com.hyphenate.easeui.Ifly.IflytekHandle;
 import com.hyphenate.easeui.R;
+import com.hyphenate.easeui.adapter.CustomerChatMoreAdapter;
 import com.hyphenate.easeui.domain.EaseEmojicon;
 import com.hyphenate.easeui.domain.EaseUser;
 import com.hyphenate.easeui.model.EaseAtMessageHelper;
@@ -64,6 +73,8 @@ import com.hyphenate.util.EMLog;
 import com.hyphenate.util.PathUtil;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -125,12 +136,12 @@ public class EaseChatFragment extends EaseBaseFragment implements EMMessageListe
 
     //去掉默认的位置
 //    protected int[] itemStrings = {R.string.attach_take_pic, R.string.attach_picture, R.string.attach_location};
-    protected int[] itemStrings = {R.string.attach_take_pic, R.string.attach_picture};
+    protected int[] itemStrings = {R.string.attach_picture, R.string.attach_take_pic};
     //    protected int[] itemdrawables = {R.drawable.ease_chat_takepic_selector, R.drawable.ease_chat_image_selector,
 //            R.drawable.ease_chat_location_selector};
-    protected int[] itemdrawables = {R.drawable.ease_chat_takepic_selector, R.drawable.ease_chat_image_selector};
+    protected int[] itemdrawables = {R.mipmap.album, R.mipmap.take_a_photo};
     //    protected int[] itemIds = {ITEM_TAKE_PICTURE, ITEM_PICTURE, ITEM_LOCATION};
-    protected int[] itemIds = {ITEM_TAKE_PICTURE, ITEM_PICTURE};
+    protected int[] itemIds = {ITEM_PICTURE, ITEM_TAKE_PICTURE,};
     private boolean isMessageListInited;
     protected MyItemClickListener extendMenuItemClickListener;
     protected boolean isRoaming = false;
@@ -139,6 +150,9 @@ public class EaseChatFragment extends EaseBaseFragment implements EMMessageListe
     private Handler typingHandler = null;
     // "正在输入"功能的开关，打开后本设备发送消息将持续发送cmd类型消息通知对方"正在输入"
     private boolean turnOnTyping;
+    private BottomSheetDialog mSheetDialog;
+    private HashMap<View, String> mVoiceFileHashMap;
+    private String mVoiceFilePath;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -168,10 +182,19 @@ public class EaseChatFragment extends EaseBaseFragment implements EMMessageListe
         return false;
     }
 
+    final List<String> mStringList = new ArrayList<>();
+
     /**
      * init view
      */
+    @Override
     protected void initView() {
+
+        mStringList.add("查看历史消息");
+        mStringList.add("屏蔽此人");
+        mStringList.add("关注");
+        mStringList.add("取消");
+
         // hold to record voice
         //noinspection ConstantConditions
         voiceRecorderView = (EaseVoiceRecorderView) getView().findViewById(R.id.voice_recorder);
@@ -196,6 +219,7 @@ public class EaseChatFragment extends EaseBaseFragment implements EMMessageListe
         registerExtendMenuItem();
         // init input menu
         inputMenu.init(null);
+//        inputMenu.setCustomPrimaryMenu();
         inputMenu.setChatInputMenuListener(new ChatInputMenuListener() {
 
             @Override
@@ -210,11 +234,15 @@ public class EaseChatFragment extends EaseBaseFragment implements EMMessageListe
             }
 
             @Override
-            public boolean onPressToSpeakBtnTouch(View v, MotionEvent event) {
+            public boolean onPressToSpeakBtnTouch(final View v, MotionEvent event) {
                 return voiceRecorderView.onPressToSpeakBtnTouch(v, event, new EaseVoiceRecorderCallback() {
 
                     @Override
                     public void onVoiceRecordComplete(String voiceFilePath, int voiceTimeLength) {
+                        Log.e(TAG, "onVoiceRecordComplete(" + TAG + ".java:" + Thread.currentThread().getStackTrace()[2].getLineNumber() + ")" + voiceFilePath);
+                        mVoiceFileHashMap = new HashMap<>();
+                        mVoiceFileHashMap.put(v, voiceFilePath);
+                        mVoiceFilePath = voiceFilePath;
                         sendVoiceMessage(voiceFilePath, voiceTimeLength);
                     }
                 });
@@ -223,6 +251,18 @@ public class EaseChatFragment extends EaseBaseFragment implements EMMessageListe
             @Override
             public void onBigExpressionClicked(EaseEmojicon emojicon) {
                 sendBigExpressionMessage(emojicon.getName(), emojicon.getIdentityCode());
+            }
+        });
+
+        voiceRecorderView.setRecorderViewScrollChangeListener(new EaseVoiceRecorderView.RecorderViewScrollChangeListener() {
+            @Override
+            public void onPressState() {
+                inputMenu.setSpeakBtnPress();
+            }
+
+            @Override
+            public void onReleaseState() {
+                inputMenu.setSpeakBtnRelease();
             }
         });
 
@@ -245,11 +285,14 @@ public class EaseChatFragment extends EaseBaseFragment implements EMMessageListe
                 switch (msg.what) {
                     case MSG_TYPING_BEGIN: // Notify typing start
 
-                        if (!turnOnTyping) return;
+                        if (!turnOnTyping) {
+                            return;
+                        }
 
                         // Only support single-chat type conversation.
-                        if (chatType != EaseConstant.CHATTYPE_SINGLE)
+                        if (chatType != EaseConstant.CHATTYPE_SINGLE) {
                             return;
+                        }
 
                         if (hasMessages(MSG_TYPING_END)) {
                             // reset the MSG_TYPING_END handler msg.
@@ -295,8 +338,11 @@ public class EaseChatFragment extends EaseBaseFragment implements EMMessageListe
 
     }
 
+    @Override
     protected void setUpView() {
         titleBar.setTitle(toChatUsername);
+        titleBar.setTitleColor(getContext().getResources().getColor(R.color.color_222222));
+        titleBar.setTitleSize(18);
         if (chatType == EaseConstant.CHATTYPE_SINGLE) {
             // set title
             if (EaseUserUtils.getUserInfo(toChatUsername) != null) {
@@ -305,14 +351,16 @@ public class EaseChatFragment extends EaseBaseFragment implements EMMessageListe
                     titleBar.setTitle(user.getNick());
                 }
             }
-            titleBar.setRightImageResource(R.drawable.ease_mm_title_remove);
+            //将其设置成更多功能
+            titleBar.setRightImageResource(R.mipmap.more);
         } else {
             titleBar.setRightImageResource(R.drawable.ease_to_group_details_normal);
             if (chatType == EaseConstant.CHATTYPE_GROUP) {
                 //group chat
                 EMGroup group = EMClient.getInstance().groupManager().getGroup(toChatUsername);
-                if (group != null)
+                if (group != null) {
                     titleBar.setTitle(group.getGroupName());
+                }
                 // listen the event that user moved out group or group is dismissed
                 groupListener = new GroupListener();
                 EMClient.getInstance().groupManager().addGroupChangeListener(groupListener);
@@ -340,7 +388,9 @@ public class EaseChatFragment extends EaseBaseFragment implements EMMessageListe
             @Override
             public void onClick(View v) {
                 if (chatType == EaseConstant.CHATTYPE_SINGLE) {
-                    emptyHistory();
+                    //把清空注释掉,弹出底部框
+//                    emptyHistory();
+                    showBottomDialog();
                 } else {
                     toGroupDetails();
                 }
@@ -355,6 +405,57 @@ public class EaseChatFragment extends EaseBaseFragment implements EMMessageListe
             forwardMessage(forward_msg_id);
         }
     }
+
+    private void showBottomDialog() {
+        mSheetDialog = new BottomSheetDialog(getContext());
+        View view = LayoutInflater.from(getContext()).inflate(R.layout.customer_more_layout, null, false);
+        mSheetDialog.setContentView(view);
+
+        RecyclerView moreRv = view.findViewById(R.id.more_rv);
+        hanlerRvData(moreRv);
+        mSheetDialog.show();
+    }
+
+    private void hanlerRvData(RecyclerView moreRv) {
+        final CustomerChatMoreAdapter moreAdapter = new CustomerChatMoreAdapter(getContext());
+        moreRv.addItemDecoration(new DividerItemDecoration(getContext(), DividerItemDecoration.VERTICAL));
+        moreRv.setLayoutManager(new LinearLayoutManager(getContext()));
+        moreRv.setAdapter(moreAdapter);
+
+        moreAdapter.setStringList(mStringList);
+        moreAdapter.setMoreItemClickListener(new CustomerChatMoreAdapter.MoreItemClickListener() {
+            @Override
+            public void onItemClick(String itemStr) {
+                if (itemStr.equals("查看历史消息")) {
+                    Toast.makeText(getContext(), "跳转到历史消息页面", Toast.LENGTH_SHORT).show();
+                    ((ChatActivity) getActivity()).addFragment(HistoricalNewsFragment.newInstance());
+                } else if (itemStr.equals("屏蔽此人")) {
+                    Toast.makeText(getContext(), "屏蔽成功", Toast.LENGTH_SHORT).show();
+                    titleBar.setTitleColor(getContext().getResources().getColor(R.color.color_A9AFB8));
+                    titleBar.setTitleRightIcon(R.mipmap.shield);
+                    mStringList.remove(1);
+                    mStringList.add(1, "取消屏蔽");
+                } else if (itemStr.equals("取消屏蔽")) {
+                    Toast.makeText(getContext(), "取消屏蔽", Toast.LENGTH_SHORT).show();
+                    titleBar.setTitleColor(getContext().getResources().getColor(R.color.color_222222));
+                    titleBar.setTitleRightIcon(-1);
+                    mStringList.remove(1);
+                    mStringList.add(1, "屏蔽此人");
+                } else if (itemStr.equals("关注")) {
+                    Toast.makeText(getContext(), "关注成功", Toast.LENGTH_SHORT).show();
+                    mStringList.remove(2);
+                    mStringList.add(2, "取消关注");
+                } else if (itemStr.equals("取消关注")) {
+                    Toast.makeText(getContext(), "取消关注", Toast.LENGTH_SHORT).show();
+                    mStringList.remove(2);
+                    mStringList.add(2, "关注");
+                } else if (itemStr.equals("取消")) {
+                }
+                mSheetDialog.dismiss();
+            }
+        });
+    }
+
 
     /**
      * register extend menu, item id need > 3 if you override this method and keep exist item
@@ -459,10 +560,10 @@ public class EaseChatFragment extends EaseBaseFragment implements EMMessageListe
             }
 
             @Override
-            public void onBubbleLongClick(EMMessage message) {
+            public void onBubbleLongClick(View v, EMMessage message) {
                 contextMenuMessage = message;
                 if (chatFragmentHelper != null) {
-                    chatFragmentHelper.onMessageBubbleLongClick(message);
+                    chatFragmentHelper.onMessageBubbleLongClick(v, message);
                 }
             }
 
@@ -567,8 +668,9 @@ public class EaseChatFragment extends EaseBaseFragment implements EMMessageListe
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == Activity.RESULT_OK) {
             if (requestCode == REQUEST_CODE_CAMERA) { // capture new image
-                if (cameraFile != null && cameraFile.exists())
+                if (cameraFile != null && cameraFile.exists()) {
                     sendImageMessage(cameraFile.getAbsolutePath());
+                }
             } else if (requestCode == REQUEST_CODE_LOCAL) { // send local image
                 if (data != null) {
                     Uri selectedImage = data.getData();
@@ -600,8 +702,9 @@ public class EaseChatFragment extends EaseBaseFragment implements EMMessageListe
     @Override
     public void onResume() {
         super.onResume();
-        if (isMessageListInited)
+        if (isMessageListInited) {
             messageList.refresh();
+        }
         EaseUI.getInstance().pushActivity(getActivity());
         // register the event listener when enter the foreground
         EMClient.getInstance().chatManager().addMessageListener(this);
@@ -812,10 +915,11 @@ public class EaseChatFragment extends EaseBaseFragment implements EMMessageListe
         if (user != null) {
             username = user.getNick();
         }
-        if (autoAddAtSymbol)
+        if (autoAddAtSymbol) {
             inputMenu.insertText("@" + username + " ");
-        else
+        } else {
             inputMenu.insertText(username + " ");
+        }
     }
 
 
@@ -979,7 +1083,36 @@ public class EaseChatFragment extends EaseBaseFragment implements EMMessageListe
             }
             sendImageMessage(file.getAbsolutePath());
         }
+    }
 
+    public void expandTextPopWindow(View v, String text) {
+
+        View popView = LayoutInflater.from(getContext()).inflate(R.layout.voice_to_text_pop, null, false);
+        TextView textView = popView.findViewById(R.id.voice_to_text_tv);
+        textView.setText(text);
+        final PopupWindow popupWindow = new PopupWindow(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+
+        popupWindow.setContentView(popView);
+        popupWindow.setBackgroundDrawable(new ColorDrawable(0x00000000));
+        popupWindow.setOutsideTouchable(true);
+        popupWindow.setClippingEnabled(true);
+        int measuredWidth = v.getMeasuredWidth();
+        Log.e(TAG, "expandTextPopWindow(" + TAG + ".java:" + Thread.currentThread().getStackTrace()[2].getLineNumber() + ")" + v.getMeasuredHeight());
+        popupWindow.showAsDropDown(v, -(EaseCommonUtils.dpToPxInt(getContext(), 37) - measuredWidth / 2), -EaseCommonUtils.dpToPxInt(getContext(), 84));
+        Log.e(TAG, "expandTextPopWindow(" + TAG + ".java:" + Thread.currentThread().getStackTrace()[2].getLineNumber() + ")" + mVoiceFileHashMap.get(v));
+        textView.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Toast.makeText(getContext(), "语音转文字", Toast.LENGTH_SHORT).show();
+                new IflytekHandle(mVoiceFilePath, getContext()) {
+                    @Override
+                    public void returnWords(String words) {
+                        Toast.makeText(getContext(), words, Toast.LENGTH_SHORT).show();
+                    }
+                };
+                popupWindow.dismiss();
+            }
+        });
     }
 
     /**
@@ -1080,9 +1213,10 @@ public class EaseChatFragment extends EaseBaseFragment implements EMMessageListe
      */
     protected void hideKeyboard() {
         if (getActivity().getWindow().getAttributes().softInputMode != WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN) {
-            if (getActivity().getCurrentFocus() != null)
+            if (getActivity().getCurrentFocus() != null) {
                 inputManager.hideSoftInputFromWindow(getActivity().getCurrentFocus().getWindowToken(),
                         InputMethodManager.HIDE_NOT_ALWAYS);
+            }
         }
     }
 
@@ -1271,7 +1405,7 @@ public class EaseChatFragment extends EaseBaseFragment implements EMMessageListe
         /**
          * on message bubble long pressed
          */
-        void onMessageBubbleLongClick(EMMessage message);
+        void onMessageBubbleLongClick(View v, EMMessage message);
 
         /**
          * on extend menu item clicked, return true if you want to override

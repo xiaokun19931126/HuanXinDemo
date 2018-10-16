@@ -3,7 +3,6 @@ package com.hyphenate.easeui;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.content.Context;
-import android.content.pm.PackageManager;
 import android.util.Log;
 
 import com.hyphenate.EMMessageListener;
@@ -14,11 +13,11 @@ import com.hyphenate.easeui.domain.EaseAvatarOptions;
 import com.hyphenate.easeui.domain.EaseEmojicon;
 import com.hyphenate.easeui.domain.EaseUser;
 import com.hyphenate.easeui.model.EaseAtMessageHelper;
-import com.hyphenate.easeui.model.EaseNotifier;
 import com.hyphenate.easeui.model.EaseDingMessageHelper;
+import com.hyphenate.easeui.model.EaseNotifier;
+import com.iflytek.cloud.SpeechUtility;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -96,6 +95,7 @@ public final class EaseUI {
      * @return
      */
     public synchronized boolean init(Context context, EMOptions options){
+        SpeechUtility.createUtility(context, "appid=5bc5a2df");
         if(sdkInited){
             return true;
         }
@@ -198,7 +198,7 @@ public final class EaseUI {
     
     /**
      * set user profile provider
-     * @param provider
+     * @param
      */
     public void setUserProfileProvider(EaseUserProfileProvider userProvider){
         this.userProvider = userProvider;

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="@dimen/dimen_74dp"
+    android:layout_height="@dimen/dimen_36dp">
+
+    <TextView
+        android:id="@+id/voice_to_text_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@mipmap/pop"
+        android:gravity="center_horizontal"
+        android:paddingTop="6dp"
+        android:paddingBottom="12dp"
+        android:text="转文字"
+        android:textColor="@color/color_FFFFFF"
+        android:textSize="14sp" />
+
+</android.support.constraint.ConstraintLayout>
