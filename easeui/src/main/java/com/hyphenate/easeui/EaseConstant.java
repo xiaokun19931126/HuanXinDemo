@@ -39,4 +39,9 @@ public class EaseConstant {
     public static final int MESSAGE_TYPE_SENT_COMMODITY = 2;
 
     public static final String MESSAGE_ATTR_IS_COMMODITY = "message_attr_is_commodity";
+
+    //=======================新引入的文字转语音========================================================
+    public static final String IS_SHOW_VOICE_TEXT = "is_show_voice_text";
+    public static final String VOICE_TO_TEXT_VALUE = "voice_to_text_value";
+    public static final String VOICE_FILE_PATH = "voice_file_path";
 }

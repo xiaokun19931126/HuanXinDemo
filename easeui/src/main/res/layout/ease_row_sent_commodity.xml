@@ -24,7 +24,7 @@
             android:layout_height="@dimen/size_avatar"
             android:layout_alignParentTop="true"
             android:layout_alignParentRight="true"
-            android:layout_marginRight="@dimen/margin_chat_activity"
+            android:layout_marginRight="@dimen/dimen_16dp"
             android:scaleType="fitXY"
             android:src="@drawable/ease_default_avatar" />
 

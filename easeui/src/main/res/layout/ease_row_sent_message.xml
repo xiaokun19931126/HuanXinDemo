@@ -48,7 +48,7 @@
                 android:minHeight="38dp"
                 android:paddingLeft="@dimen/dimen_10dp"
                 android:paddingRight="@dimen/dimen_10dp"
-                android:textColor="@color/color_0F1826"
+                android:textColor="@color/color_FFFFFF"
                 android:textSize="16sp" />
         </RelativeLayout>
 

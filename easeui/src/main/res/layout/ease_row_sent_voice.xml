@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:gravity="center_horizontal"
@@ -46,6 +47,36 @@
                 android:src="@mipmap/red_play3" />
         </RelativeLayout>
 
+        <RelativeLayout
+            android:id="@+id/voice_to_text_bubble_rl"
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/dimen_40dp"
+            android:layout_below="@+id/bubble"
+            android:layout_marginTop="@dimen/dimen_8dp"
+            android:layout_marginRight="@dimen/dimen_12dp"
+            android:layout_toLeftOf="@id/iv_userhead"
+            android:background="@drawable/ease_chat_send_bg"
+            android:minHeight="40dp"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/tv_chatcontent"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:layout_centerVertical="true"
+                android:autoLink="web"
+                android:gravity="center_vertical|left"
+                android:lineSpacingExtra="2dp"
+                android:maxWidth="225.0dp"
+                android:minHeight="38dp"
+                android:paddingLeft="@dimen/dimen_10dp"
+                android:paddingRight="@dimen/dimen_10dp"
+                android:textColor="@color/color_FFFFFF"
+                android:textSize="16sp"
+                tools:text="你今天吃饭了吗?" />
+        </RelativeLayout>
+
         <TextView
             android:id="@+id/tv_length"
             style="@style/chat_text_name_style"
@@ -60,7 +91,7 @@
             android:id="@+id/msg_status"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_centerVertical="true"
+            android:layout_marginTop="@dimen/dimen_10dp"
             android:layout_toLeftOf="@id/tv_length"
             android:clickable="true"
             android:src="@drawable/ease_msg_state_failed_resend"
@@ -92,7 +123,7 @@
             android:id="@+id/progress_bar"
             android:layout_width="25dp"
             android:layout_height="25dp"
-            android:layout_centerVertical="true"
+            android:layout_marginTop="10dp"
             android:layout_toLeftOf="@id/tv_length"
             android:visibility="visible" />
     </RelativeLayout>

@@ -19,6 +19,7 @@ import android.support.v4.widget.SwipeRefreshLayout.OnRefreshListener;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -52,6 +53,7 @@ import com.hyphenate.easeui.EaseUI;
 import com.hyphenate.easeui.Ifly.IflytekHandle;
 import com.hyphenate.easeui.R;
 import com.hyphenate.easeui.adapter.CustomerChatMoreAdapter;
+import com.hyphenate.easeui.adapter.EaseMessageAdapter;
 import com.hyphenate.easeui.domain.EaseEmojicon;
 import com.hyphenate.easeui.domain.EaseUser;
 import com.hyphenate.easeui.model.EaseAtMessageHelper;
@@ -74,7 +76,6 @@ import com.hyphenate.util.PathUtil;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -151,8 +152,6 @@ public class EaseChatFragment extends EaseBaseFragment implements EMMessageListe
     // "正在输入"功能的开关，打开后本设备发送消息将持续发送cmd类型消息通知对方"正在输入"
     private boolean turnOnTyping;
     private BottomSheetDialog mSheetDialog;
-    private HashMap<View, String> mVoiceFileHashMap;
-    private String mVoiceFilePath;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -166,7 +165,6 @@ public class EaseChatFragment extends EaseBaseFragment implements EMMessageListe
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
-
         fragmentArgs = getArguments();
         // check if single chat or group chat
         chatType = fragmentArgs.getInt(EaseConstant.EXTRA_CHAT_TYPE, EaseConstant.CHATTYPE_SINGLE);
@@ -201,8 +199,9 @@ public class EaseChatFragment extends EaseBaseFragment implements EMMessageListe
 
         // message list layout
         messageList = (EaseChatMessageList) getView().findViewById(R.id.message_list);
-        if (chatType != EaseConstant.CHATTYPE_SINGLE)
+        if (chatType != EaseConstant.CHATTYPE_SINGLE) {
             messageList.setShowUserNick(true);
+        }
 //        messageList.setAvatarShape(1);
         listView = messageList.getListView();
 
@@ -240,9 +239,6 @@ public class EaseChatFragment extends EaseBaseFragment implements EMMessageListe
                     @Override
                     public void onVoiceRecordComplete(String voiceFilePath, int voiceTimeLength) {
                         Log.e(TAG, "onVoiceRecordComplete(" + TAG + ".java:" + Thread.currentThread().getStackTrace()[2].getLineNumber() + ")" + voiceFilePath);
-                        mVoiceFileHashMap = new HashMap<>();
-                        mVoiceFileHashMap.put(v, voiceFilePath);
-                        mVoiceFilePath = voiceFilePath;
                         sendVoiceMessage(voiceFilePath, voiceTimeLength);
                     }
                 });
@@ -340,7 +336,8 @@ public class EaseChatFragment extends EaseBaseFragment implements EMMessageListe
 
     @Override
     protected void setUpView() {
-        titleBar.setTitle(toChatUsername);
+//        titleBar.setTitle(toChatUsername);
+        titleBar.setTitle("武汉光谷美容医院");
         titleBar.setTitleColor(getContext().getResources().getColor(R.color.color_222222));
         titleBar.setTitleSize(18);
         if (chatType == EaseConstant.CHATTYPE_SINGLE) {
@@ -560,10 +557,10 @@ public class EaseChatFragment extends EaseBaseFragment implements EMMessageListe
             }
 
             @Override
-            public void onBubbleLongClick(View v, EMMessage message) {
+            public void onBubbleLongClick(View voiceToTextView, View v, EMMessage message, int position) {
                 contextMenuMessage = message;
                 if (chatFragmentHelper != null) {
-                    chatFragmentHelper.onMessageBubbleLongClick(v, message);
+                    chatFragmentHelper.onMessageBubbleLongClick(voiceToTextView, v, message, position);
                 }
             }
 
@@ -697,7 +694,6 @@ public class EaseChatFragment extends EaseBaseFragment implements EMMessageListe
             }
         }
     }
-
 
     @Override
     public void onResume() {
@@ -974,6 +970,7 @@ public class EaseChatFragment extends EaseBaseFragment implements EMMessageListe
 
     protected void sendVoiceMessage(String filePath, int length) {
         EMMessage message = EMMessage.createVoiceSendMessage(filePath, length, toChatUsername);
+        message.setAttribute(EaseConstant.VOICE_FILE_PATH, filePath);
         sendMessage(message);
     }
 
@@ -1085,7 +1082,17 @@ public class EaseChatFragment extends EaseBaseFragment implements EMMessageListe
         }
     }
 
-    public void expandTextPopWindow(View v, String text) {
+    /**
+     * 展开语音转文字控件
+     *
+     * @param voiceToTextView 语音转文字控件
+     * @param v               被点击的语音控件
+     * @param text            默认是"转文字"字符串
+     * @param position
+     */
+    public void expandTextPopWindow(final View voiceToTextView, View v, String text, final int position) {
+        EaseMessageAdapter messageAdapter = messageList.getMessageAdapter();
+        final EMMessage message = messageAdapter.getItem(position);
 
         View popView = LayoutInflater.from(getContext()).inflate(R.layout.voice_to_text_pop, null, false);
         TextView textView = popView.findViewById(R.id.voice_to_text_tv);
@@ -1099,15 +1106,23 @@ public class EaseChatFragment extends EaseBaseFragment implements EMMessageListe
         int measuredWidth = v.getMeasuredWidth();
         Log.e(TAG, "expandTextPopWindow(" + TAG + ".java:" + Thread.currentThread().getStackTrace()[2].getLineNumber() + ")" + v.getMeasuredHeight());
         popupWindow.showAsDropDown(v, -(EaseCommonUtils.dpToPxInt(getContext(), 37) - measuredWidth / 2), -EaseCommonUtils.dpToPxInt(getContext(), 84));
-        Log.e(TAG, "expandTextPopWindow(" + TAG + ".java:" + Thread.currentThread().getStackTrace()[2].getLineNumber() + ")" + mVoiceFileHashMap.get(v));
+        final String voiceFilePath = message.getStringAttribute(EaseConstant.VOICE_FILE_PATH, "");
+        if (TextUtils.isEmpty(voiceFilePath)) {
+            Toast.makeText(getContext(), "没有找到语音的文件路径", Toast.LENGTH_SHORT).show();
+            return;
+        }
         textView.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(getContext(), "语音转文字", Toast.LENGTH_SHORT).show();
-                new IflytekHandle(mVoiceFilePath, getContext()) {
+                new IflytekHandle(voiceFilePath, getContext()) {
                     @Override
                     public void returnWords(String words) {
-                        Toast.makeText(getContext(), words, Toast.LENGTH_SHORT).show();
+                        message.setAttribute(EaseConstant.VOICE_TO_TEXT_VALUE, words);
+                        message.setAttribute(EaseConstant.IS_SHOW_VOICE_TEXT, true);
+                        TextView voiceTv = voiceToTextView.findViewById(R.id.tv_chatcontent);
+                        voiceTv.setText(words);
+                        //移到底部
+                        messageList.refreshSeekTo(position);
                     }
                 };
                 popupWindow.dismiss();
@@ -1405,7 +1420,7 @@ public class EaseChatFragment extends EaseBaseFragment implements EMMessageListe
         /**
          * on message bubble long pressed
          */
-        void onMessageBubbleLongClick(View v, EMMessage message);
+        void onMessageBubbleLongClick(View voiceToTextView, View v, EMMessage message, int position);
 
         /**
          * on extend menu item clicked, return true if you want to override

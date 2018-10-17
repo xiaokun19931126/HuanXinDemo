@@ -11,7 +11,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         hyphenate:titleBarBackground="@color/color_FFFFFF"
-        hyphenate:titleBarLeftImage="@drawable/ease_mm_title_back" />
+        hyphenate:titleBarLeftImage="@mipmap/back" />
 
     <LinearLayout
         android:id="@+id/layout_alert_kicked_off"

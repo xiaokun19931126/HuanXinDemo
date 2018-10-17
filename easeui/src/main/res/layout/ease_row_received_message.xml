@@ -35,7 +35,7 @@
             android:layout_marginLeft="@dimen/dimen_12dp"
             android:layout_toRightOf="@id/iv_userhead"
             android:background="@drawable/ease_chat_receive_bg"
-            android:minHeight="48dp">
+            android:minHeight="40dp">
 
             <TextView
                 android:id="@+id/tv_chatcontent"

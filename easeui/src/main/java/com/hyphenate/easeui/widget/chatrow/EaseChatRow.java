@@ -8,6 +8,7 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.hyphenate.chat.EMClient;
@@ -27,6 +28,13 @@ import com.hyphenate.util.DateUtils;
 import java.util.Date;
 
 public abstract class EaseChatRow extends LinearLayout {
+
+    /**
+     * 新增的语音转文字控件
+     */
+    protected RelativeLayout mVoiceToTextRl;
+    protected TextView mVoiceToText;
+
     public interface EaseChatRowActionCallback {
         void onResendClick(EMMessage message);
 
@@ -88,17 +96,23 @@ public abstract class EaseChatRow extends LinearLayout {
         });
     }
 
+    public int getPosition() {
+        return this.position;
+    }
+
     private void initView() {
         onInflateView();
         timeStampView = (TextView) findViewById(R.id.timestamp);
         userAvatarView = (ImageView) findViewById(R.id.iv_userhead);
         bubbleLayout = findViewById(R.id.bubble);
         usernickView = (TextView) findViewById(R.id.tv_userid);
-
         progressBar = (ProgressBar) findViewById(R.id.progress_bar);
         statusView = (ImageView) findViewById(R.id.msg_status);
         ackedView = (TextView) findViewById(R.id.tv_ack);
         deliveredView = (TextView) findViewById(R.id.tv_delivered);
+        //新增的语音转文字控件
+        mVoiceToTextRl = findViewById(R.id.voice_to_text_bubble_rl);
+        mVoiceToText = findViewById(R.id.tv_chatcontent);
 
         onFindViewById();
     }
@@ -180,24 +194,29 @@ public abstract class EaseChatRow extends LinearLayout {
                     EaseAvatarOptions avatarOptions = EaseUI.getInstance().getAvatarOptions();
                     if (avatarOptions != null && userAvatarView instanceof EaseImageView) {
                         EaseImageView avatarView = ((EaseImageView) userAvatarView);
-                        if (avatarOptions.getAvatarShape() != 0)
+                        if (avatarOptions.getAvatarShape() != 0) {
                             avatarView.setShapeType(avatarOptions.getAvatarShape());
-                        if (avatarOptions.getAvatarBorderWidth() != 0)
+                        }
+                        if (avatarOptions.getAvatarBorderWidth() != 0) {
                             avatarView.setBorderWidth(avatarOptions.getAvatarBorderWidth());
-                        if (avatarOptions.getAvatarBorderColor() != 0)
+                        }
+                        if (avatarOptions.getAvatarBorderColor() != 0) {
                             avatarView.setBorderColor(avatarOptions.getAvatarBorderColor());
-                        if (avatarOptions.getAvatarRadius() != 0)
+                        }
+                        if (avatarOptions.getAvatarRadius() != 0) {
                             avatarView.setRadius(avatarOptions.getAvatarRadius());
+                        }
                     }
                 } else {
                     userAvatarView.setVisibility(View.GONE);
                 }
             }
             if (usernickView != null) {
-                if (itemStyle.isShowUserNick())
+                if (itemStyle.isShowUserNick()) {
                     usernickView.setVisibility(View.VISIBLE);
-                else
+                } else {
                     usernickView.setVisibility(View.GONE);
+                }
             }
             if (bubbleLayout != null) {
                 if (message.direct() == Direct.SEND) {
@@ -234,7 +253,7 @@ public abstract class EaseChatRow extends LinearLayout {
                 @Override
                 public boolean onLongClick(View v) {
                     if (itemClickListener != null) {
-                        itemClickListener.onBubbleLongClick(v, message);
+                        itemClickListener.onBubbleLongClick(mVoiceToTextRl, v, message, position);
                     }
                     return true;
                 }

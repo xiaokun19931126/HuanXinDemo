@@ -47,7 +47,7 @@ public class FindAContactActivity extends AppCompatActivity implements View.OnCl
 
         mCurrentUserName = MyApp.getSp().getString(USERNAME, "");
         if (mCurrentUserName.equals("xc")) {
-            mStartChatBtn.setText("对xk发起聊天");
+            mStartChatBtn.setText("从商品详情进入");
         } else if (mCurrentUserName.equals("xk")) {
             mStartChatBtn.setText("对xc发起聊天");
         }

@@ -48,6 +48,35 @@
                 android:src="@mipmap/gray_play3" />
         </RelativeLayout>
 
+        <RelativeLayout
+            android:id="@+id/voice_to_text_bubble_rl"
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/dimen_40dp"
+            android:layout_below="@+id/bubble"
+            android:layout_marginLeft="@dimen/dimen_12dp"
+            android:layout_marginTop="@dimen/dimen_8dp"
+            android:layout_toRightOf="@id/iv_userhead"
+            android:background="@drawable/ease_chat_receive_bg"
+            android:minHeight="40dp"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/tv_chatcontent"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:layout_centerVertical="true"
+                android:autoLink="web"
+                android:gravity="center_vertical|left"
+                android:lineSpacingExtra="2dp"
+                android:maxWidth="225.0dp"
+                android:minHeight="38dp"
+                android:paddingLeft="@dimen/dimen_10dp"
+                android:paddingRight="@dimen/dimen_10dp"
+                android:textColor="@color/color_0F1826"
+                android:textSize="16sp" />
+        </RelativeLayout>
+
         <TextView
             android:id="@+id/tv_length"
             style="@style/chat_text_name_style"

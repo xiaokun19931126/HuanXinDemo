@@ -64,9 +64,9 @@ public class ChatActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onMessageBubbleLongClick(View v, EMMessage message) {
+            public void onMessageBubbleLongClick(View voiceToTextView, View v, EMMessage message, int position) {
                 if (message.getType() == EMMessage.Type.VOICE) {
-                    chatFragment.expandTextPopWindow(v, "转文字");
+                    chatFragment.expandTextPopWindow(voiceToTextView, v, "转文字", position);
                 }
             }
 
@@ -81,7 +81,7 @@ public class ChatActivity extends AppCompatActivity {
             }
         });
         chatFragment.setArguments(getIntent().getExtras());
-        EMMessage message = EMMessage.createTxtSendMessage("测试", "xk");
+        EMMessage message = EMMessage.createTxtSendMessage("商品详情消息类型", "xk");
         message.setAttribute(EaseConstant.MESSAGE_ATTR_IS_COMMODITY, true);
         EMClient.getInstance().chatManager().sendMessage(message);
 
@@ -96,4 +96,13 @@ public class ChatActivity extends AppCompatActivity {
         ft.commit();
     }
 
+    @Override
+    public void onBackPressed() {
+        //当fragment栈只剩下一个时,返回键直接finish当前activity
+        if (getSupportFragmentManager().getBackStackEntryCount() == 1) {
+            finish();
+            return;
+        }
+        super.onBackPressed();
+    }
 }

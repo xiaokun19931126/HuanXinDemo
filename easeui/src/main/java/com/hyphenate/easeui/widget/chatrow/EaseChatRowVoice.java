@@ -11,6 +11,7 @@ import com.hyphenate.chat.EMClient;
 import com.hyphenate.chat.EMFileMessageBody;
 import com.hyphenate.chat.EMMessage;
 import com.hyphenate.chat.EMVoiceMessageBody;
+import com.hyphenate.easeui.EaseConstant;
 import com.hyphenate.easeui.R;
 import com.hyphenate.util.EMLog;
 
@@ -75,6 +76,14 @@ public class EaseChatRowVoice extends EaseChatRowFile {
             } else {
                 progressBar.setVisibility(View.INVISIBLE);
             }
+        }
+
+        if (message.getBooleanAttribute(EaseConstant.IS_SHOW_VOICE_TEXT, false)) {
+            mVoiceToTextRl.setVisibility(VISIBLE);
+            String textValue = message.getStringAttribute(EaseConstant.VOICE_TO_TEXT_VALUE, "");
+            mVoiceToText.setText(textValue);
+        } else {
+            mVoiceToTextRl.setVisibility(GONE);
         }
 
         // To avoid the item is recycled by listview and slide to this item again but the animation is stopped.
