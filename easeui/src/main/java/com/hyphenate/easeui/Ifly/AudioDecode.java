@@ -61,15 +61,21 @@ public class AudioDecode {
     private void initMediaDecode() {
         try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-                mediaExtractor = new MediaExtractor();//此类可分离视频文件的音轨和视频轨道
-                mediaExtractor.setDataSource(srcPath);//媒体文件的位置
-                for (int i = 0; i < mediaExtractor.getTrackCount(); i++) {//遍历媒体轨道 此处我们传入的是音频文件，所以也就只有一条轨道
-                    MediaFormat format = mediaExtractor.getTrackFormat(i);;
+                //此类可分离视频文件的音轨和视频轨道
+                mediaExtractor = new MediaExtractor();
+                //媒体文件的位置
+                mediaExtractor.setDataSource(srcPath);
+                //遍历媒体轨道 此处我们传入的是音频文件，所以也就只有一条轨道
+                for (int i = 0; i < mediaExtractor.getTrackCount(); i++) {
+                    MediaFormat format = mediaExtractor.getTrackFormat(i);
                     format.setInteger(MediaFormat.KEY_BIT_RATE, AudioFormat.ENCODING_PCM_16BIT);
                     String mime = format.getString(MediaFormat.KEY_MIME);
-                    if (mime.startsWith("audio")) {//获取音频轨道
-                        mediaExtractor.selectTrack(i);//选择此音频轨道
-                        mediaDecode = MediaCodec.createDecoderByType(mime);//创建Decode解码器
+                    //获取音频轨道
+                    if (mime.startsWith("audio")) {
+                        //选择此音频轨道
+                        mediaExtractor.selectTrack(i);
+                        //创建Decode解码器
+                        mediaDecode = MediaCodec.createDecoderByType(mime);
                         mediaDecode.configure(format, null, null, 0);
                         break;
                     }
@@ -78,17 +84,20 @@ public class AudioDecode {
                     Log.e(TAG, "create mediaDecode failed");
                     return;
                 }
-                mediaDecode.start();//启动MediaCodec ，等待传入数据
-                decodeInputBuffers = mediaDecode.getInputBuffers();//MediaCodec在此ByteBuffer[]中获取输入数据
-                decodeOutputBuffers = mediaDecode.getOutputBuffers();//MediaCodec将解码后的数据放到此ByteBuffer[]中 我们可以直接在这里面得到PCM数据
-                decodeBufferInfo = new MediaCodec.BufferInfo();//用于描述解码得到的byte[]数据的相关信息
+                //启动MediaCodec ，等待传入数据
+                mediaDecode.start();
+                //MediaCodec在此ByteBuffer[]中获取输入数据
+                decodeInputBuffers = mediaDecode.getInputBuffers();
+                //MediaCodec将解码后的数据放到此ByteBuffer[]中 我们可以直接在这里面得到PCM数据
+                decodeOutputBuffers = mediaDecode.getOutputBuffers();
+                //用于描述解码得到的byte[]数据的相关信息
+                decodeBufferInfo = new MediaCodec.BufferInfo();
                 showLog("buffers:" + decodeInputBuffers.length);
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
-
 
 
     /**
@@ -106,7 +115,8 @@ public class AudioDecode {
      * @param pcmChunk PCM数据块
      */
     private void putPCMData(byte[] pcmChunk) {
-        synchronized (AudioDecode.class) {//记得加锁
+        //记得加锁
+        synchronized (AudioDecode.class) {
             chunkPCMDataContainer.add(pcmChunk);
         }
     }
@@ -136,7 +146,7 @@ public class AudioDecode {
      */
     private void srcAudioFormatToPCM() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-            if(decodeInputBuffers!=null){
+            if (decodeInputBuffers != null) {
                 try {
                     for (int i = 0; i < decodeInputBuffers.length - 1; i++) {
                         int inputIndex = 0;//获取可用的inputBuffer -1代表一直等待，0表示不等待 建议-1,避免丢帧
@@ -172,12 +182,12 @@ public class AudioDecode {
                         outputIndex = mediaDecode.dequeueOutputBuffer(decodeBufferInfo, 10000);//再次获取数据，如果没有数据输出则outputIndex=-1 循环结束
                     }
 
-                    if(codeOver){
+                    if (codeOver) {
                         if (onCompleteListener != null) {
                             onCompleteListener.completed(chunkPCMDataContainer);
                         }
                     }
-                }catch (Exception e){
+                } catch (Exception e) {
                     e.printStackTrace();
                     codeOver = true;
                     if (onCompleteListener != null) {
@@ -192,54 +202,60 @@ public class AudioDecode {
      * android 5.0以上
      */
     private void srcAudioFormatToPCMHigherApi() {
-        if (Build.VERSION.SDK_INT >= 21){
+        if (Build.VERSION.SDK_INT >= 21) {
             boolean sawOutputEOS = false;
             final long kTimeOutUs = 10000;
             long presentationTimeUs = 0;
-            while (!sawOutputEOS){
-                try{
+            while (!sawOutputEOS) {
+                try {
                     int inputIndex = mediaDecode.dequeueInputBuffer(-1);
-                    if (inputIndex >= 0){
+                    if (inputIndex >= 0) {
                         ByteBuffer inputBuffer = mediaDecode.getInputBuffer(inputIndex);
-                        if(inputBuffer!=null){
+                        if (inputBuffer != null) {
                             int sampleSize = mediaExtractor.readSampleData(inputBuffer, 0);
-                            if (sampleSize < 0) {// 小于0 代表所有数据已读取完成
+                            // 小于0 代表所有数据已读取完成
+                            if (sampleSize < 0) {
                                 sawOutputEOS = true;
                                 codeOver = true;
                                 break;
-                            }else{
+                            } else {
                                 presentationTimeUs = mediaExtractor.getSampleTime();
-                                mediaDecode.queueInputBuffer(inputIndex, 0, sampleSize, presentationTimeUs, 0);// 通知MediaDecode解码刚刚传入的数据
+                                // 通知MediaDecode解码刚刚传入的数据
+                                mediaDecode.queueInputBuffer(inputIndex, 0, sampleSize, presentationTimeUs, 0);
                                 mediaExtractor.advance();
                             }
                         }
-                    }else{
+                    } else {
                         sawOutputEOS = true;
                         codeOver = true;
                     }
                     int outputIndex = mediaDecode.dequeueOutputBuffer(decodeBufferInfo, kTimeOutUs);
-                    ByteBuffer outputBuffer ;//= mediaDecode.getOutputBuffer(outputIndex);// 拿到用于存放PCM数据的Buffer
-                    while (outputIndex >= 0){
+                    ByteBuffer outputBuffer;//= mediaDecode.getOutputBuffer(outputIndex);// 拿到用于存放PCM数据的Buffer
+                    while (outputIndex >= 0) {
                         outputBuffer = mediaDecode.getOutputBuffer(outputIndex);
                         boolean doRender = (decodeBufferInfo.size != 0);
-                        if(doRender && outputBuffer!=null){
+                        if (doRender && outputBuffer != null) {
                             outputBuffer.position(decodeBufferInfo.offset);
                             outputBuffer.limit(decodeBufferInfo.offset + decodeBufferInfo.size);
-                            byte[] chunkPCM = new byte[decodeBufferInfo.size];// BufferInfo内定义了此数据块的大小
+                            // BufferInfo内定义了此数据块的大小
+                            byte[] chunkPCM = new byte[decodeBufferInfo.size];
                             outputBuffer.get(chunkPCM);
-                            outputBuffer.clear();// 数据取出后一定记得清空此Buffer   MediaCodec是循环使用这些Buffer的，不清空下次会得到同样的数据
-                            putPCMData(chunkPCM);// 自己定义的方法，供编码器所在的线程获取数据,下面会贴出代码
-                            mediaDecode.releaseOutputBuffer(outputIndex, false);// 此操作一定要做，不然MediaCodec用完所有的Buffer后将不能向外输出数据
+                            // 数据取出后一定记得清空此Buffer   MediaCodec是循环使用这些Buffer的，不清空下次会得到同样的数据
+                            outputBuffer.clear();
+                            // 自己定义的方法，供编码器所在的线程获取数据,下面会贴出代码
+                            putPCMData(chunkPCM);
+                            // 此操作一定要做，不然MediaCodec用完所有的Buffer后将不能向外输出数据
+                            mediaDecode.releaseOutputBuffer(outputIndex, false);
                             outputIndex = mediaDecode.dequeueOutputBuffer(decodeBufferInfo, kTimeOutUs);
                         }
                     }
-                }catch (Exception e){
+                } catch (Exception e) {
                     e.printStackTrace();
                     sawOutputEOS = true;
                     codeOver = true;
                 }
             }
-            if(codeOver){
+            if (codeOver) {
                 if (onCompleteListener != null) {
                     onCompleteListener.completed(chunkPCMDataContainer);
                 }
@@ -251,10 +267,10 @@ public class AudioDecode {
      * 释放资源
      */
     public void release() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN){
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
 
-            try{
-                if(decoderThread!=null && decoderThread.isAlive()){
+            try {
+                if (decoderThread != null && decoderThread.isAlive()) {
                     decoderThread.interrupt();
                     codeOver = true;
                 }
@@ -273,7 +289,7 @@ public class AudioDecode {
                 if (onCompleteListener != null) {
                     onCompleteListener = null;
                 }
-            }catch (Exception e){
+            } catch (Exception e) {
                 e.printStackTrace();
             }
 
@@ -288,9 +304,9 @@ public class AudioDecode {
         @Override
         public void run() {
             while (!codeOver) {
-                if(Build.VERSION.SDK_INT>=21){
+                if (Build.VERSION.SDK_INT >= 21) {
                     srcAudioFormatToPCMHigherApi();
-                }else if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN){
+                } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
                     srcAudioFormatToPCM();
                 }
             }
@@ -306,6 +322,7 @@ public class AudioDecode {
 
     /**
      * 设置转码完成监听器
+     *
      * @param onCompleteListener 监听器
      */
     public void setOnCompleteListener(OnCompleteListener onCompleteListener) {

@@ -47,6 +47,7 @@ import com.hyphenate.chat.EMImageMessageBody;
 import com.hyphenate.chat.EMMessage;
 import com.hyphenate.chat.EMMessage.ChatType;
 import com.hyphenate.chat.EMTextMessageBody;
+import com.hyphenate.chat.EMVoiceMessageBody;
 import com.hyphenate.chat.adapter.EMAChatRoomManagerListener;
 import com.hyphenate.easeui.EaseConstant;
 import com.hyphenate.easeui.EaseUI;
@@ -145,7 +146,7 @@ public class EaseChatFragment extends EaseBaseFragment implements EMMessageListe
     protected int[] itemIds = {ITEM_PICTURE, ITEM_TAKE_PICTURE,};
     private boolean isMessageListInited;
     protected MyItemClickListener extendMenuItemClickListener;
-    protected boolean isRoaming = false;
+    protected boolean isRoaming = true;
     private ExecutorService fetchQueue;
     // to handle during-typing actions.
     private Handler typingHandler = null;
@@ -308,11 +309,14 @@ public class EaseChatFragment extends EaseBaseFragment implements EMMessageListe
                         break;
                     case MSG_TYPING_END:
 
-                        if (!turnOnTyping) return;
+                        if (!turnOnTyping) {
+                            return;
+                        }
 
                         // Only support single-chat type conversation.
-                        if (chatType != EaseConstant.CHATTYPE_SINGLE)
+                        if (chatType != EaseConstant.CHATTYPE_SINGLE) {
                             return;
+                        }
 
                         // remove all pedding msgs to avoid memory leak.
                         removeCallbacksAndMessages(null);
@@ -425,7 +429,7 @@ public class EaseChatFragment extends EaseBaseFragment implements EMMessageListe
             public void onItemClick(String itemStr) {
                 if (itemStr.equals("查看历史消息")) {
                     Toast.makeText(getContext(), "跳转到历史消息页面", Toast.LENGTH_SHORT).show();
-                    ((ChatActivity) getActivity()).addFragment(HistoricalNewsFragment.newInstance());
+                    ((ChatActivity) getActivity()).addFragment(HistoricalNewsFragment.newInstance(toChatUsername, chatType));
                 } else if (itemStr.equals("屏蔽此人")) {
                     Toast.makeText(getContext(), "屏蔽成功", Toast.LENGTH_SHORT).show();
                     titleBar.setTitleColor(getContext().getResources().getColor(R.color.color_A9AFB8));
@@ -970,7 +974,6 @@ public class EaseChatFragment extends EaseBaseFragment implements EMMessageListe
 
     protected void sendVoiceMessage(String filePath, int length) {
         EMMessage message = EMMessage.createVoiceSendMessage(filePath, length, toChatUsername);
-        message.setAttribute(EaseConstant.VOICE_FILE_PATH, filePath);
         sendMessage(message);
     }
 
@@ -1106,7 +1109,7 @@ public class EaseChatFragment extends EaseBaseFragment implements EMMessageListe
         int measuredWidth = v.getMeasuredWidth();
         Log.e(TAG, "expandTextPopWindow(" + TAG + ".java:" + Thread.currentThread().getStackTrace()[2].getLineNumber() + ")" + v.getMeasuredHeight());
         popupWindow.showAsDropDown(v, -(EaseCommonUtils.dpToPxInt(getContext(), 37) - measuredWidth / 2), -EaseCommonUtils.dpToPxInt(getContext(), 84));
-        final String voiceFilePath = message.getStringAttribute(EaseConstant.VOICE_FILE_PATH, "");
+        final String voiceFilePath = ((EMVoiceMessageBody) message.getBody()).getLocalUrl();
         if (TextUtils.isEmpty(voiceFilePath)) {
             Toast.makeText(getContext(), "没有找到语音的文件路径", Toast.LENGTH_SHORT).show();
             return;
